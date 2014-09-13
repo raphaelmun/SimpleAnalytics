@@ -95,32 +95,40 @@ namespace SimpleAnalytics
         public void Flush()
         {
             DateTime now = SystemTime.UtcNow;
+            List<string> expiringOccurances = new List<string>();
             foreach( string key in openOccurances.Keys )
             {
                 if( openOccurances[ key ].Expiration <= now )
                 {
                     EventOccurance occurance = openOccurances[ key ];
                     occurances.Add( new EventOccurance( occurance.Time, now, occurance.Expiration ) );
-                    openOccurances.Remove( key );
+                    expiringOccurances.Add( key );
                     expiredCount++;
                 }
+            }
+            foreach( string key in expiringOccurances )
+            {
+                openOccurances.Remove( key );
             }
         }
     }
 
     public class Events
     {
+        public const string DefaultName = "Default";
         public const int DefaultExpirationTime = 300;
+        Dictionary<string, Event> events;
+        Dictionary<string, string> properties;
 
         public string Name
         {
             get
             {
-                throw new NotImplementedException();
+                return properties[ "Name" ];
             }
             set
             {
-                throw new NotImplementedException();
+                properties[ "Name" ] = value;
             }
         }
 
@@ -128,19 +136,11 @@ namespace SimpleAnalytics
         {
             get
             {
-                throw new NotImplementedException();
+                return properties;
             }
             set
             {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string SessionID
-        {
-            get
-            {
-                throw new NotImplementedException();
+                Detail( value );
             }
         }
 
@@ -148,48 +148,92 @@ namespace SimpleAnalytics
         {
             get
             {
-                throw new NotImplementedException();
+                if( !events.ContainsKey( eventName ) )
+                {
+                    return null;
+                }
+                return events[ eventName ];
             }
         }
 
         public Events()
         {
-            throw new NotImplementedException();
+            events = new Dictionary<string, Event>();
+            properties = new Dictionary<string, string>();
+            properties.Add( "Name", DefaultName );
         }
 
         public Events( Dictionary<string, string> details )
         {
-            throw new NotImplementedException();
+            events = new Dictionary<string, Event>();
+            properties = details;
+            if( !details.ContainsKey( "Name" ) )
+            {
+                properties.Add( "Name", DefaultName );
+            }
         }
 
         public void Detail( string key, string value )
         {
-            throw new NotImplementedException();
+            if( properties.ContainsKey( key ) )
+            {
+                properties[ key ] = value;
+            }
+            else
+            {
+                properties.Add( key, value );
+            }
         }
 
         public void Detail( Dictionary<string, string> details )
         {
-            throw new NotImplementedException();
+            foreach( string key in details.Keys )
+            {
+                if( properties.ContainsKey( key ) )
+                {
+                    properties[ key ] = details[ key ];
+                }
+                else
+                {
+                    properties.Add( key, details[ key ] );
+                }
+            }
         }
 
         public void Increment( string eventName )
         {
-            throw new NotImplementedException();
+            if( !events.ContainsKey( eventName ) )
+            {
+                events.Add( eventName, new Event() );
+            }
+            events[ eventName ].Increment();
         }
 
         public string Open( string eventName, int expirationInSeconds = DefaultExpirationTime )
         {
-            throw new NotImplementedException();
+            if( !events.ContainsKey( eventName ) )
+            {
+                events.Add( eventName, new Event() );
+            }
+            string uuid = Utility.GenerateUUID();
+            events[ eventName ].Open( uuid, expirationInSeconds );
+            return uuid;
         }
 
-        public void Close( string eventID )
+        public void Close( string eventName, string eventID )
         {
-            throw new NotImplementedException();
+            if( !events[ eventName ].Close( eventID ) )
+            {
+                throw new ArgumentException( "Bad Event ID" );
+            }
         }
 
         public void Flush()
         {
-            throw new NotImplementedException();
+            foreach( string key in events.Keys )
+            {
+                events[ key ].Flush();
+            }
         }
 
         public override string ToString()
