@@ -26,7 +26,7 @@ namespace SimpleAnalyticsTests
         public void ConstructorSetsDefaultName()
         {
             Events testEvent = new Events();
-            Assert.AreEqual( "Default", testEvent.Name );
+            Assert.AreEqual( Events.DefaultName, testEvent.Name );
         }
 
         [TestMethod]
@@ -44,13 +44,6 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
-        public void ConstructorSetsSessionID()
-        {
-            Events testEvent = new Events();
-            Assert.IsFalse( string.IsNullOrEmpty( testEvent.SessionID ) );
-        }
-
-        [TestMethod]
         public void NameSetsName()
         {
             Events testEvent = new Events();
@@ -64,6 +57,50 @@ namespace SimpleAnalyticsTests
             Events testEvent = new Events();
             testEvent.Detail( new Dictionary<string, string>() { { "Name", "Test" } } );
             Assert.AreEqual( "Test", testEvent.Name );
+        }
+
+        [TestMethod]
+        public void DetailAddsSingleValue()
+        {
+            Events testEvent = new Events();
+            testEvent.Detail( "Test", "TestValue" );
+            Assert.AreEqual( "TestValue", testEvent.Details[ "Test" ] );
+        }
+
+        [TestMethod]
+        public void DetailReplacesSingleValueForExistingKey()
+        {
+            Events testEvent = new Events();
+            testEvent.Detail( "Test", "TestValue" );
+            testEvent.Detail( "Test", "TestNewValue" );
+            Assert.AreEqual( "TestNewValue", testEvent.Details[ "Test" ] );
+        }
+
+        [TestMethod]
+        public void DetailAddsMultipleValues()
+        {
+            Events testEvent = new Events();
+            testEvent.Detail( new Dictionary<string, string>() { { "Test1", "1" }, { "Test2", "2" } } );
+            Assert.AreEqual( "1", testEvent.Details[ "Test1" ] );
+            Assert.AreEqual( "2", testEvent.Details[ "Test2" ] );
+        }
+
+        [TestMethod]
+        public void DetailReplacesMultipleValues()
+        {
+            Events testEvent = new Events();
+            testEvent.Detail( new Dictionary<string, string>() { { "Test1", "1" }, { "Test2", "2" } } );
+            testEvent.Detail( new Dictionary<string, string>() { { "Test1", "New1" }, { "Test2", "New2" } } );
+            Assert.AreEqual( "New1", testEvent.Details[ "Test1" ] );
+            Assert.AreEqual( "New2", testEvent.Details[ "Test2" ] );
+        }
+
+        [TestMethod]
+        public void DetailRetainsOldValues()
+        {
+            Events testEvent = new Events( new Dictionary<string, string>() { { "Test", "Test" } } );
+            testEvent.Detail( new Dictionary<string, string>() { { "Test1", "1" }, { "Test2", "2" } } );
+            Assert.AreEqual( "Test", testEvent.Details[ "Test" ] );
         }
 
         [TestMethod]
@@ -93,20 +130,22 @@ namespace SimpleAnalyticsTests
         [TestMethod]
         public void CloseAddsToTheListOfOccurances()
         {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
             Events testEvent = new Events();
             string id = testEvent.Open( "TestEvent" );
-            SystemTime.UtcNowFunc = () => DateTime.UtcNow + TimeSpan.FromSeconds( 5 );
-            testEvent.Close( id );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 1, 0 );
+            testEvent.Close( "TestEvent", id );
             Assert.AreEqual( 1, testEvent[ "TestEvent" ].Count );
         }
 
         [TestMethod]
         public void CloseUpdatesEventValue()
         {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
             Events testEvent = new Events();
             string id = testEvent.Open( "TestEvent" );
-            SystemTime.UtcNowFunc = () => DateTime.UtcNow + TimeSpan.FromSeconds( 5 );
-            testEvent.Close( id );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 1, 0 );
+            testEvent.Close( "TestEvent", id );
 
             EventOccurance occurance = testEvent[ "TestEvent" ].Occurances.Last();
             Assert.IsTrue( occurance.FinishedTime > occurance.Time );
@@ -117,18 +156,20 @@ namespace SimpleAnalyticsTests
         public void CloseFailsForNonexistentEventID()
         {
             Events testEvent = new Events();
-            testEvent.Close( Utility.GenerateUUID() );
+            testEvent.Open( "TestEvent" );
+            testEvent.Close( "TestEvent", Utility.GenerateUUID() );
         }
 
         [TestMethod]
         public void FlushExpiresOldOpenEvents()
         {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
             Events testEvent = new Events();
             string id = testEvent.Open( "TestEvent", 5 );
-            SystemTime.UtcNowFunc = () => DateTime.UtcNow + TimeSpan.FromSeconds( 10 );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 1, 0 );
             testEvent.Flush();
 
-            Assert.AreEqual( 0, testEvent[ "TestEvent" ].Count );
+            Assert.AreEqual( 1, testEvent[ "TestEvent" ].Count );
             Assert.AreEqual( 0, testEvent[ "TestEvent" ].OpenCount );
         }
 
@@ -142,9 +183,10 @@ namespace SimpleAnalyticsTests
         [TestMethod]
         public void ExpiredEventsAreAddedToExpiredCount()
         {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
             Events testEvent = new Events();
             string id = testEvent.Open( "TestEvent", 5 );
-            SystemTime.UtcNowFunc = () => DateTime.UtcNow + TimeSpan.FromSeconds( 10 );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 1, 0 );
             testEvent.Flush();
 
             Assert.AreEqual( 1, testEvent[ "TestEvent" ].ExpiredCount );
