@@ -149,6 +149,7 @@ namespace SimpleAnalyticsTests
 
             EventOccurance occurance = testEvent[ "TestEvent" ].Occurances.Last();
             Assert.IsTrue( occurance.FinishedTime > occurance.Time );
+            Assert.IsFalse( occurance.IsExpired );
         }
 
         [TestMethod]
