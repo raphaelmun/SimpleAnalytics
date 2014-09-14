@@ -13,22 +13,28 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleAnalytics", "SimpleAnalytics\SimpleAnalytics.csproj", "{16538BDE-F91E-481C-80F8-948CFF694A43}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = SimpleAnalytics.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Release|Any CPU.Build.0 = Release|Any CPU
 		{16538BDE-F91E-481C-80F8-948CFF694A43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16538BDE-F91E-481C-80F8-948CFF694A43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16538BDE-F91E-481C-80F8-948CFF694A43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16538BDE-F91E-481C-80F8-948CFF694A43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EC6413F-DD87-4281-9970-A1CC8E9AF461}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = SimpleAnalyticsTests\SimpleAnalyticsTests.csproj
+		version = 1.0
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = SimpleAnalytics.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
