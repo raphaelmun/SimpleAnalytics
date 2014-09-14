@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "SimpleAnalytics" )]
-[assembly: AssemblyDescription( "" )]
+[assembly: AssemblyDescription( "SimpleAnalytics Library for Event Tracking" )]
 [assembly: AssemblyConfiguration( "" )]
-[assembly: AssemblyCompany( "" )]
+[assembly: AssemblyCompany( "Munomic, LLC." )]
 [assembly: AssemblyProduct( "SimpleAnalytics" )]
-[assembly: AssemblyCopyright( "Copyright ©  2014" )]
+[assembly: AssemblyCopyright( "Copyright © Munomic 2014" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
