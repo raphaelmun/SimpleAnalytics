@@ -130,7 +130,32 @@ namespace SimpleAnalytics
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat( "{{" );
+            bool passedFirstKey = false;
+            foreach( string key in Details.Keys )
+            {
+                if( passedFirstKey )
+                {
+                    sb.Append( "," );
+                }
+                sb.AppendFormat( @"""{0}"":""{1}""", key, Details[ key ] );
+                passedFirstKey = true;
+            }
+            sb.AppendFormat( @",""Events"":[" );
+            passedFirstKey = false;
+            foreach( string key in events.Keys )
+            {
+                if( passedFirstKey )
+                {
+                    sb.Append( "," );
+                }
+                sb.AppendFormat( @"{{""{0}"":{1}}}", key, events[ key ].ToString() );
+                passedFirstKey = true;
+            }
+            sb.AppendFormat( @"]" );
+            sb.AppendFormat( "}}" );
+            return sb.ToString();
         }
     }
 }

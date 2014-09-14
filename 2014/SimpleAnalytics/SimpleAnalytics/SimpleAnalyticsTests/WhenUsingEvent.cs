@@ -44,11 +44,29 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void AverageTimeLengthStartsAtZero()
+        {
+            Event testEvent = new Event();
+            Assert.AreEqual( 0, testEvent.AverageTimeLength );
+        }
+
+        [TestMethod]
         public void IncrementAddsAnOccurance()
         {
             Event testEvent = new Event();
             testEvent.Increment();
             Assert.AreEqual( 1, testEvent.Count );
+        }
+
+        [TestMethod]
+        public void IncrementSucceedsPastMaxOccurancesTracked()
+        {
+            Event testEvent = new Event();
+            for( int i = 0; i < Event.MaxOccurancesTracked + 1; i++ )
+            {
+                testEvent.Increment();
+            }
+            Assert.AreEqual( Event.MaxOccurancesTracked + 1, testEvent.Count );
         }
 
         [TestMethod]
@@ -109,11 +127,37 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void CloseCalculatesAverageTimeLengthValue()
+        {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
+            Event testEvent = new Event();
+            string uuid = Utility.GenerateUUID();
+            testEvent.Open( uuid, 10 );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 10 );
+            testEvent.Close( uuid );
+            EventOccurance occurance = testEvent.Occurances.Last();
+            Assert.AreEqual( 10, testEvent.AverageTimeLength );
+        }
+
+        [TestMethod]
         public void CloseReturnsFalseForNonexistentOpenOccurance()
         {
             Event testEvent = new Event();
             testEvent.Open( Utility.GenerateUUID(), 10 );
             Assert.IsFalse( testEvent.Close( Utility.GenerateUUID() ) );
+        }
+
+        [TestMethod]
+        public void CloseSucceedsPastMaxOccurancesTracked()
+        {
+            Event testEvent = new Event();
+            for( int i = 0; i < Event.MaxOccurancesTracked + 1; i++ )
+            {
+                string uuid = Utility.GenerateUUID();
+                testEvent.Open( uuid, 10 );
+                testEvent.Close( uuid );
+            }
+            Assert.AreEqual( Event.MaxOccurancesTracked + 1, testEvent.Count );
         }
 
         [TestMethod]
