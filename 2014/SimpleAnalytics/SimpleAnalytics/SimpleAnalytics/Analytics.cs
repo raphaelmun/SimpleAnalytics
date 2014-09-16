@@ -7,9 +7,11 @@ namespace SimpleAnalytics
 {
     public class Analytics
     {
+        static Events events = new Events();
+
         /// <summary>
         /// Global static Events instance for easy use
         /// </summary>
-        public static Events Events { get; set; }
+        public static Events Events { get { return events; } }
     }
 }
