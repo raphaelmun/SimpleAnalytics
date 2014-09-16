@@ -162,6 +162,23 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void ResetResetsEvents()
+        {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
+            Events testEvent = new Events();
+            testEvent.Increment( "TestEventIncrement" );
+            string id = testEvent.Open( "TestEvent", 5 );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 1, 0 );
+            testEvent.Flush();
+            testEvent.Reset();
+
+            Assert.AreEqual( 0, testEvent[ "TestEventIncrement" ].Count );
+            Assert.AreEqual( 0, testEvent[ "TestEvent" ].Count );
+            Assert.AreEqual( 0, testEvent[ "TestEvent" ].OpenCount );
+            Assert.AreEqual( 0, testEvent[ "TestEvent" ].ExpiredCount );
+        }
+
+        [TestMethod]
         public void FlushExpiresOldOpenEvents()
         {
             SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
