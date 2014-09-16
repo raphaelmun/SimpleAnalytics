@@ -12,6 +12,9 @@ namespace SimpleAnalytics
         Dictionary<string, Event> events;
         Dictionary<string, string> properties;
 
+        /// <summary>
+        /// Gets or Sets the Name of the events set
+        /// </summary>
         public string Name
         {
             get
@@ -24,6 +27,9 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Gets or Sets the Detail properties of the events set
+        /// </summary>
         public Dictionary<string, string> Details
         {
             get
@@ -36,6 +42,11 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Gets the Event object mapped to the name of the event
+        /// </summary>
+        /// <param name="eventName">A name string used to track the event</param>
+        /// <returns>The Event object mapped to the name of the event</returns>
         public Event this[ string eventName ]
         {
             get
@@ -48,6 +59,9 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Constructor for the Events class
+        /// </summary>
         public Events()
         {
             events = new Dictionary<string, Event>();
@@ -55,6 +69,10 @@ namespace SimpleAnalytics
             properties.Add( "Name", DefaultName );
         }
 
+        /// <summary>
+        /// Constructor for the Events class
+        /// </summary>
+        /// <param name="details">Detail properties of the events set</param>
         public Events( Dictionary<string, string> details )
         {
             events = new Dictionary<string, Event>();
@@ -65,6 +83,11 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Sets this event set's detail property
+        /// </summary>
+        /// <param name="key">Detail property key</param>
+        /// <param name="value">Detail property value</param>
         public void Detail( string key, string value )
         {
             if( properties.ContainsKey( key ) )
@@ -77,6 +100,10 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Sets this event set's detail properties
+        /// </summary>
+        /// <param name="details">Detail properties of the events set</param>
         public void Detail( Dictionary<string, string> details )
         {
             foreach( string key in details.Keys )
@@ -92,6 +119,10 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Adds an occurance of the event to the total
+        /// </summary>
+        /// <param name="eventName">A name string used to track the event</param>
         public void Increment( string eventName )
         {
             if( !events.ContainsKey( eventName ) )
@@ -101,6 +132,12 @@ namespace SimpleAnalytics
             events[ eventName ].Increment();
         }
 
+        /// <summary>
+        /// Opens an occurance of the event for tracking
+        /// </summary>
+        /// <param name="eventName">A name string used to track the event</param>
+        /// <param name="expirationInSeconds">Time it takes for this event occurance to expire during a Flush()</param>
+        /// <returns>Unique ID to track the event occurance as a GUID in string format.</returns>
         public string Open( string eventName, int expirationInSeconds = DefaultExpirationTime )
         {
             if( !events.ContainsKey( eventName ) )
@@ -112,6 +149,11 @@ namespace SimpleAnalytics
             return uuid;
         }
 
+        /// <summary>
+        /// Completes the tracking for the open event occurance and calculates the average time length for the event.
+        /// </summary>
+        /// <param name="eventName">A name string used to track the event</param>
+        /// <param name="eventID">Unique ID to track the event occurance. This should be a GUID in string format.</param>
         public void Close( string eventName, string eventID )
         {
             if( !events[ eventName ].Close( eventID ) )
@@ -120,6 +162,20 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Resets all values of the events
+        /// </summary>
+        public void Reset()
+        {
+            foreach( string key in events.Keys )
+            {
+                events[ key ].Reset();
+            }
+        }
+
+        /// <summary>
+        /// Removes all expired occurances in the set of events
+        /// </summary>
         public void Flush()
         {
             foreach( string key in events.Keys )
@@ -128,6 +184,10 @@ namespace SimpleAnalytics
             }
         }
 
+        /// <summary>
+        /// Converts the set of events into a JSON string
+        /// </summary>
+        /// <returns>The set of events as a JSON string</returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
