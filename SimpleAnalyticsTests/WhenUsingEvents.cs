@@ -128,6 +128,33 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void OpenSetsExpirationTime()
+        {
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
+            Events testEvent = new Events();
+            testEvent.Open( "TestEvent", 10 );
+            SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 11 );
+            testEvent.Flush();
+            Assert.AreEqual( 1, testEvent[ "TestEvent" ].ExpiredCount );
+        }
+
+        [TestMethod]
+        public void OpenSetsUUID()
+        {
+            Events testEvent = new Events();
+            string uuid = Utility.GenerateUUID();
+            testEvent.Open( "TestEvent", uuid );
+            try
+            {
+                testEvent.Close( "TestEvent", uuid );
+            }
+            catch
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod]
         public void CloseAddsToTheListOfOccurances()
         {
             SystemTime.UtcNowFunc = () => new DateTime( 2014, 9, 13, 0, 0, 0 );
@@ -153,12 +180,11 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
-        [ExpectedException( typeof( ArgumentException ) )]
         public void CloseFailsForNonexistentEventID()
         {
             Events testEvent = new Events();
             testEvent.Open( "TestEvent" );
-            testEvent.Close( "TestEvent", Utility.GenerateUUID() );
+            Assert.IsFalse( testEvent.Close( "TestEvent", Utility.GenerateUUID() ) );
         }
 
         [TestMethod]
