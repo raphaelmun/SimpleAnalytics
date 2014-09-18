@@ -9,21 +9,33 @@ namespace SimpleAnalytics
     {
         public static DateTime Now
         {
-            get { return NowFunc(); }
+            get
+            {
+                if( UtcNowFunc != null )
+                {
+                    return UtcNowFunc().ToLocalTime();
+                }
+                return DateTime.Now;
+            }
         }
 
         public static DateTime UtcNow
         {
-            get { return UtcNowFunc(); }
+            get
+            {
+                if( UtcNowFunc != null )
+                {
+                    return UtcNowFunc();
+                }
+                return DateTime.UtcNow;
+            }
         }
 
-        public static Func<DateTime> NowFunc = () => DateTime.Now;
-        public static Func<DateTime> UtcNowFunc = () => DateTime.UtcNow;
+        public static Func<DateTime> UtcNowFunc = null;
 
         public static void ResetToDefault()
         {
-            Func<DateTime> NowFunc = () => DateTime.Now;
-            Func<DateTime> UtcNowFunc = () => DateTime.UtcNow;
+            UtcNowFunc = null;
         }
     }
 
