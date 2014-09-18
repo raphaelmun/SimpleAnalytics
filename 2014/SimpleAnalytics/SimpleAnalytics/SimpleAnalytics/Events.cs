@@ -140,11 +140,22 @@ namespace SimpleAnalytics
         /// <returns>Unique ID to track the event occurance as a GUID in string format.</returns>
         public string Open( string eventName, int expirationInSeconds = DefaultExpirationTime )
         {
+            return Open( eventName, Utility.GenerateUUID(), expirationInSeconds );
+        }
+
+        /// <summary>
+        /// Opens an occurance of the event for tracking
+        /// </summary>
+        /// <param name="eventName">A name string used to track the event</param>
+        /// <param name="uuid">Unique ID to track the event occurance as a GUID in string format</param>
+        /// <param name="expirationInSeconds">Time it takes for this event occurance to expire during a Flush()</param>
+        /// <returns>Unique ID to track the event occurance as a GUID in string format.</returns>
+        public string Open( string eventName, string uuid, int expirationInSeconds = DefaultExpirationTime )
+        {
             if( !events.ContainsKey( eventName ) )
             {
                 events.Add( eventName, new Event() );
             }
-            string uuid = Utility.GenerateUUID();
             events[ eventName ].Open( uuid, expirationInSeconds );
             return uuid;
         }
@@ -154,12 +165,14 @@ namespace SimpleAnalytics
         /// </summary>
         /// <param name="eventName">A name string used to track the event</param>
         /// <param name="eventID">Unique ID to track the event occurance. This should be a GUID in string format.</param>
-        public void Close( string eventName, string eventID )
+        /// <returns>True on success, false otherwise.</returns>
+        public bool Close( string eventName, string eventID )
         {
-            if( !events[ eventName ].Close( eventID ) )
+            if( events.ContainsKey( eventName ) )
             {
-                throw new ArgumentException( "Bad Event ID" );
+                return events[ eventName ].Close( eventID );
             }
+            return false;
         }
 
         /// <summary>

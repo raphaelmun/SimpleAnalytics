@@ -147,24 +147,22 @@ namespace SimpleAnalytics
             if( openOccurances.ContainsKey( eventId ) )
             {
                 EventOccurance occurance = openOccurances[ eventId ];
-                occurances[ currentIndex ] = new EventOccurance( occurance.Time, SystemTime.UtcNow, occurance.Expiration );
+                occurances[ currentIndex ] = new EventOccurance( occurance.Time, SystemTime.UtcNow, DateTime.MaxValue );
                 currentIndex = ( currentIndex + 1 ) % MaxOccurancesTracked;
                 count++;
                 openOccurances.Remove( eventId );
-                // Calculate Average Time Length
+                // Calculate Average Time Length (only for non-expired events)
                 float timeTotal = 0.0f;
+                int occurancesTotal = 0;
                 for( int i = 0; i < Count && i < MaxOccurancesTracked; i++ )
                 {
-                    timeTotal += (float)occurances[ i ].TimeLength.TotalSeconds;
+                    if( !occurances[ i ].IsExpired )
+                    {
+                        timeTotal += (float)occurances[ i ].TimeLength.TotalSeconds;
+                        occurancesTotal++;
+                    }
                 }
-                if( Count < MaxOccurancesTracked )
-                {
-                    averageTimeLength = timeTotal / Count;
-                }
-                else
-                {
-                    averageTimeLength = timeTotal / MaxOccurancesTracked;
-                }
+                averageTimeLength = timeTotal / occurancesTotal;
                 return true;
             }
             return false;
