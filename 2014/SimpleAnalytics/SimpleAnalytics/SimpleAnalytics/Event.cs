@@ -211,7 +211,7 @@ namespace SimpleAnalytics
         /// <returns>The Event object as a JSON string</returns>
         public override string ToString()
         {
-            return string.Format( @"{{""Count"":{0},""Open"":{1},""Expired"":{2},""AverageTimeLength"":{3}}}", Count, OpenCount, ExpiredCount, AverageTimeLength );
+            return string.Format( @"{{""Count"":{0},""Open"":{1},""Exp"":{2},""AvgTime"":{3}}}", Count, OpenCount, ExpiredCount, AverageTimeLength );
         }
     }
 }
