@@ -40,6 +40,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WhenUsingEventSummary.cs" />
+    <Compile Include="WhenUsingEventsSummary.cs" />
+    <Compile Include="WhenUsingEventOccurance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WhenUsingEvent.cs" />
     <Compile Include="WhenUsingEvents.cs" />

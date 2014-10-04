@@ -2,36 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web.Script.Serialization;
+using Newtonsoft.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace SimpleAnalytics
 {
-    /// <summary>
-    /// Defines an occurance of an Event
-    /// </summary>
-    public struct EventOccurance
-    {
-        public DateTime Time;
-        public DateTime FinishedTime;
-        public DateTime Expiration;
-
-        public EventOccurance( DateTime time, DateTime finishedTime, DateTime expiration )
-        {
-            Time = time;
-            FinishedTime = finishedTime;
-            Expiration = expiration;
-        }
-
-        public TimeSpan TimeLength
-        {
-            get { return FinishedTime - Time; }
-        }
-
-        public bool IsExpired
-        {
-            get { return FinishedTime >= Expiration; }
-        }
-    }
-
     /// <summary>
     /// Defines a trackable event
     /// </summary>
@@ -88,6 +65,15 @@ namespace SimpleAnalytics
         }
 
         /// <summary>
+        /// Gets the Event summary as a JSON string
+        /// </summary>
+        [JsonIgnore]
+        public EventSummary Summary
+        {
+            get { return new EventSummary( Count, OpenCount, ExpiredCount, AverageTimeLength ); }
+        }
+
+        /// <summary>
         /// Gets a copy of the array of all occurances of the event
         /// </summary>
         public EventOccurance[] Occurances
@@ -105,6 +91,16 @@ namespace SimpleAnalytics
                     occurancesCopy = (EventOccurance[])occurances.Clone();
                 }
                 return occurancesCopy;
+            }
+            set
+            {
+                count = 0;
+                for( int i = 0; i < value.Length && i < MaxOccurancesTracked; i++ )
+                {
+                    occurances[ i ] = value[ i ];
+                    count++;
+                }
+                calculateAverageTimeLength();
             }
         }
 
@@ -147,22 +143,11 @@ namespace SimpleAnalytics
             if( openOccurances.ContainsKey( eventId ) )
             {
                 EventOccurance occurance = openOccurances[ eventId ];
-                occurances[ currentIndex ] = new EventOccurance( occurance.Time, SystemTime.UtcNow, DateTime.MaxValue );
+                occurances[ currentIndex ] = new EventOccurance( occurance.Start, SystemTime.UtcNow, DateTime.MaxValue );
                 currentIndex = ( currentIndex + 1 ) % MaxOccurancesTracked;
                 count++;
                 openOccurances.Remove( eventId );
-                // Calculate Average Time Length (only for non-expired events)
-                float timeTotal = 0.0f;
-                int occurancesTotal = 0;
-                for( int i = 0; i < Count && i < MaxOccurancesTracked; i++ )
-                {
-                    if( !occurances[ i ].IsExpired )
-                    {
-                        timeTotal += (float)occurances[ i ].TimeLength.TotalSeconds;
-                        occurancesTotal++;
-                    }
-                }
-                averageTimeLength = timeTotal / occurancesTotal;
+                calculateAverageTimeLength();
                 return true;
             }
             return false;
@@ -192,7 +177,7 @@ namespace SimpleAnalytics
                 if( openOccurances[ key ].Expiration <= now )
                 {
                     EventOccurance occurance = openOccurances[ key ];
-                    occurances[ currentIndex ] = new EventOccurance( occurance.Time, now, occurance.Expiration );
+                    occurances[ currentIndex ] = new EventOccurance( occurance.Start, now, occurance.Expiration );
                     currentIndex = ( currentIndex + 1 ) % MaxOccurancesTracked;
                     count++;
                     expiringOccurances.Add( key );
@@ -206,12 +191,53 @@ namespace SimpleAnalytics
         }
 
         /// <summary>
+        /// Converts a JSON string into an Event object
+        /// </summary>
+        /// <param name="occuranceString">A JSON string of the event</param>
+        /// <returns>The JSON as an Even object</returns>
+        public static Event FromString( string eventString )
+        {
+            return JsonConvert.DeserializeObject<Event>( eventString );
+        }
+
+        /// <summary>
         /// Converts the Event into a JSON string
         /// </summary>
         /// <returns>The Event object as a JSON string</returns>
         public override string ToString()
         {
-            return string.Format( @"{{""Count"":{0},""Open"":{1},""Exp"":{2},""AvgTime"":{3}}}", Count, OpenCount, ExpiredCount, AverageTimeLength );
+            return JsonConvert.SerializeObject( this );
+            //StringBuilder sb = new StringBuilder();
+            //bool passedFirstKey = false;
+            //sb.AppendFormat( @"{{""Count"":{0},""Open"":{1},""Exp"":{2},""AvgTime"":{3},""Occurances"":[", Count, OpenCount, ExpiredCount, AverageTimeLength );
+            //for( int i = 0; i < Count && i < MaxOccurancesTracked; i++ )
+            //{
+            //    if( passedFirstKey )
+            //    {
+            //        sb.Append( "," );
+            //    }
+            //    sb.AppendFormat( occurances[ i ].ToString() );
+            //    passedFirstKey = true;
+            //}
+            //sb.AppendFormat( @"]" );
+            //sb.AppendFormat( "}}" );
+            //return sb.ToString();
+        }
+
+        private void calculateAverageTimeLength()
+        {
+            // Calculate Average Time Length (only for non-expired events)
+            float timeTotal = 0.0f;
+            int occurancesTotal = 0;
+            for( int i = 0; i < Count && i < MaxOccurancesTracked; i++ )
+            {
+                if( !occurances[ i ].IsExpired )
+                {
+                    timeTotal += (float)occurances[ i ].TimeLength.TotalSeconds;
+                    occurancesTotal++;
+                }
+            }
+            averageTimeLength = timeTotal / occurancesTotal;
         }
     }
 }

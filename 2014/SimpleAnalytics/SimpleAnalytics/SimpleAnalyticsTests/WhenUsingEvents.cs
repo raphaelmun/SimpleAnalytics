@@ -175,7 +175,7 @@ namespace SimpleAnalyticsTests
             testEvent.Close( "TestEvent", id );
 
             EventOccurance occurance = testEvent[ "TestEvent" ].Occurances.Last();
-            Assert.IsTrue( occurance.FinishedTime > occurance.Time );
+            Assert.IsTrue( occurance.Finished > occurance.Start );
             Assert.IsFalse( occurance.IsExpired );
         }
 

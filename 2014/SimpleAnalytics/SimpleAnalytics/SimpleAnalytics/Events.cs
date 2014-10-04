@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace SimpleAnalytics
 {
+    /// <summary>
+    /// Defines a collection of trackable events
+    /// </summary>
     public class Events
     {
         public const string DefaultName = "Default";
@@ -56,6 +60,44 @@ namespace SimpleAnalytics
                     return null;
                 }
                 return events[ eventName ];
+            }
+        }
+
+        /// <summary>
+        /// Gets the Events summary as a JSON string
+        /// </summary>
+        [JsonIgnore]
+        public EventsSummary Summary
+        {
+            get
+            {
+                return new EventsSummary( properties, events );
+                //StringBuilder sb = new StringBuilder();
+                //sb.AppendFormat( "{{" );
+                //bool passedFirstKey = false;
+                //foreach( string key in Details.Keys )
+                //{
+                //    if( passedFirstKey )
+                //    {
+                //        sb.Append( "," );
+                //    }
+                //    sb.AppendFormat( @"""{0}"":""{1}""", key, Details[ key ] );
+                //    passedFirstKey = true;
+                //}
+                //sb.AppendFormat( @",""Events"":[" );
+                //passedFirstKey = false;
+                //foreach( string key in events.Keys )
+                //{
+                //    if( passedFirstKey )
+                //    {
+                //        sb.Append( "," );
+                //    }
+                //    sb.AppendFormat( @"{{""{0}"":{1}}}", key, events[ key ].Summary );
+                //    passedFirstKey = true;
+                //}
+                //sb.AppendFormat( @"]" );
+                //sb.AppendFormat( "}}" );
+                //return sb.ToString();
             }
         }
 
