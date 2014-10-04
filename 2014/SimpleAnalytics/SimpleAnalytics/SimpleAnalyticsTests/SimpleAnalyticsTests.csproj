@@ -40,6 +40,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WhenUsingEventsSummaryDataPoint.cs" />
+    <Compile Include="WhenUsingEventsHistory.cs" />
     <Compile Include="WhenUsingEventSummary.cs" />
     <Compile Include="WhenUsingEventsSummary.cs" />
     <Compile Include="WhenUsingEventOccurance.cs" />
