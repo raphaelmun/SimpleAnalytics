@@ -252,5 +252,26 @@ namespace SimpleAnalyticsTests
             EventOccurance occurance = testEvent.Occurances.Last();
             Assert.IsTrue( occurance.IsExpired );
         }
+
+        [TestMethod]
+        public void ToStringIsNotEmpty()
+        {
+            Event testEvent = new Event();
+            string uuid = Utility.GenerateUUID();
+            testEvent.Open( uuid, 10 );
+            testEvent.Close( uuid );
+            Assert.IsFalse( string.IsNullOrEmpty( testEvent.ToString() ) );
+        }
+
+        [TestMethod]
+        public void FromStringCreatesEqualEvent()
+        {
+            Event expectedEvent = new Event();
+            string uuid = Utility.GenerateUUID();
+            expectedEvent.Open( uuid, 10 );
+            expectedEvent.Close( uuid );
+            Event testEvent = Event.FromString( expectedEvent.ToString() );
+            Assert.AreEqual( expectedEvent.ToString(), testEvent.ToString() );
+        }
     }
 }
