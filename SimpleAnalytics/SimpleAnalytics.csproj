@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analytics.cs" />
+    <Compile Include="EventsHistory.cs" />
+    <Compile Include="EventsSummaryDataPoint.cs" />
     <Compile Include="EventSummary.cs" />
     <Compile Include="EventOccurance.cs" />
     <Compile Include="EventsSummary.cs" />
