@@ -9,9 +9,9 @@ namespace SimpleAnalytics
     public struct EventsSummaryDataPoint
     {
         public DateTime Time;
-        public EventsSummary Summary;
+        public EventSummary Summary;
 
-        public EventsSummaryDataPoint( DateTime time, EventsSummary summary )
+        public EventsSummaryDataPoint( DateTime time, EventSummary summary )
         {
             Time = time;
             Summary = summary;
