@@ -46,37 +46,37 @@ namespace SimpleAnalyticsTests
         [TestMethod]
         public void EventsIsSet()
         {
-            EventsHistory testHistory = new EventsHistory( null, new Dictionary<string, EventsSummaryDataPoint[]>() { { "Test", new EventsSummaryDataPoint[] { new EventsSummaryDataPoint( SystemTime.UtcNow, new EventsSummary( null, null ) ) } } } );
+            EventsHistory testHistory = new EventsHistory( null, new Dictionary<string, EventsSummaryDataPoint[]>() { { "Test", new EventsSummaryDataPoint[] { new EventsSummaryDataPoint( SystemTime.UtcNow, new EventSummary( 12, 34, 56, 7.8f ) ) } } } );
             Assert.IsNotNull( testHistory.Events[ "Test" ] );
         }
 
         [TestMethod]
         public void EventsIsCreatedWhenNull()
         {
-            EventsSummary testSummary = new EventsSummary( null, null );
-            Assert.IsNotNull( testSummary.Events );
+            EventsHistory testHistory = new EventsHistory( null, null );
+            Assert.IsNotNull( testHistory.Events );
         }
 
         [TestMethod]
         public void EventsIsEmptyWhenNull()
         {
-            EventsSummary testSummary = new EventsSummary( null, null );
-            Assert.AreEqual( 0, testSummary.Events.Count );
+            EventsHistory testHistory = new EventsHistory( null, null );
+            Assert.AreEqual( 0, testHistory.Events.Count );
         }
 
         [TestMethod]
         public void ToStringIsNotEmpty()
         {
-            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", new Event() } } );
-            Assert.IsFalse( string.IsNullOrEmpty( testSummary.ToString() ) );
+            EventsHistory testHistory = new EventsHistory( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, EventsSummaryDataPoint[]>() { { "Test", new EventsSummaryDataPoint[] { new EventsSummaryDataPoint( SystemTime.UtcNow, new EventSummary( 12, 34, 56, 7.8f ) ) } } } );
+            Assert.IsFalse( string.IsNullOrEmpty( testHistory.ToString() ) );
         }
 
         [TestMethod]
         public void FromStringCreatesEqualEventOccurance()
         {
-            EventsSummary expectedSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", new Event() } } );
-            EventsSummary testSummary = EventsSummary.FromString( expectedSummary.ToString() );
-            Assert.AreEqual( expectedSummary.ToString(), testSummary.ToString() );
+            EventsHistory expectedHistory = new EventsHistory( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, EventsSummaryDataPoint[]>() { { "Test", new EventsSummaryDataPoint[] { new EventsSummaryDataPoint( SystemTime.UtcNow, new EventSummary( 12, 34, 56, 7.8f ) ) } } } );
+            EventsHistory testHistory = EventsHistory.FromString( expectedHistory.ToString() );
+            Assert.AreEqual( expectedHistory.ToString(), testHistory.ToString() );
         }
     }
 }
