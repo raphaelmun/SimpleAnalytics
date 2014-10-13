@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace SimpleAnalytics
@@ -11,6 +12,8 @@ namespace SimpleAnalytics
         public const int MaxSummariesTracked = 100;
         public Dictionary<string, string> Details;
         public Dictionary<string, EventsSummaryDataPoint[]> Events;
+        public Dictionary<string, int> Counts;
+        private Dictionary<string, int> indices;
         public Dictionary<string, EventSummary> Min; // TODO: Add tests
         public Dictionary<string, EventSummary> Avg; // TODO: Add tests
         public Dictionary<string, EventSummary> Max; // TODO: Add tests
@@ -28,50 +31,98 @@ namespace SimpleAnalytics
             if( events == null )
             {
                 Events = new Dictionary<string, EventsSummaryDataPoint[]>();
+                Counts = new Dictionary<string, int>();
+                indices = new Dictionary<string, int>();
                 Min = new Dictionary<string, EventSummary>();
                 Avg = new Dictionary<string, EventSummary>();
                 Max = new Dictionary<string, EventSummary>();
             }
             else
             {
-                Events = events;
+                Events = new Dictionary<string, EventsSummaryDataPoint[]>();
+                Counts = new Dictionary<string, int>();
+                indices = new Dictionary<string, int>();
                 Min = new Dictionary<string, EventSummary>();
                 Avg = new Dictionary<string, EventSummary>();
                 Max = new Dictionary<string, EventSummary>();
                 foreach( string key in events.Keys )
                 {
-                    EventsSummaryDataPoint[] dataPoints = events[ key ];
-                    EventSummary min = dataPoints[ 0 ].Summary;
-                    EventSummary max = dataPoints[ 0 ].Summary;
-                    EventSummary avg = new EventSummary( 0, 0, 0, 0.0f );
-                    int dataPointCount = 0;
-                    foreach( EventsSummaryDataPoint dataPoint in dataPoints )
+                    Events.Add( key, new EventsSummaryDataPoint[ MaxSummariesTracked ] );
+                    Counts.Add( key, 0 );
+                    for( int i = 0; i < events[ key ].Length && i < MaxSummariesTracked; i++ )
                     {
-                        if( dataPoint.Summary.Count < min.Count ) { min.Count = dataPoint.Summary.Count; }
-                        if( dataPoint.Summary.Open < min.Open ) { min.Open = dataPoint.Summary.Open; }
-                        if( dataPoint.Summary.Expired < min.Expired ) { min.Expired = dataPoint.Summary.Expired; }
-                        if( dataPoint.Summary.AverageTime < min.AverageTime ) { min.AverageTime = dataPoint.Summary.AverageTime; }
-
-                        if( dataPoint.Summary.Count > max.Count ) { max.Count = dataPoint.Summary.Count; }
-                        if( dataPoint.Summary.Open > max.Open ) { max.Open = dataPoint.Summary.Open; }
-                        if( dataPoint.Summary.Expired > max.Expired ) { max.Expired = dataPoint.Summary.Expired; }
-                        if( dataPoint.Summary.AverageTime > max.AverageTime ) { max.AverageTime = dataPoint.Summary.AverageTime; }
-
-                        avg.Count += dataPoint.Summary.Count;
-                        avg.Open += dataPoint.Summary.Open;
-                        avg.Expired += dataPoint.Summary.Expired;
-                        avg.AverageTime += dataPoint.Summary.AverageTime;
-                        dataPointCount++;
+                        Events[ key ][ i ] = events[ key ][ i ];
+                        Counts[ key ]++;
                     }
-
-                    avg.Count /= dataPointCount;
-                    avg.Open /= dataPointCount;
-                    avg.Expired /= dataPointCount;
-                    avg.AverageTime /= (float)dataPointCount;
-                    Min.Add( key, min );
-                    Max.Add( key, max );
-                    Avg.Add( key, avg );
+                    indices.Add( key, Counts[ key ] % MaxSummariesTracked );
+                    EventsSummaryDataPoint[] dataPoints = Events[ key ];
+                    Min.Add( key, dataPoints[ 0 ].Summary );
+                    Max.Add( key, dataPoints[ 0 ].Summary );
+                    Avg.Add( key, dataPoints[ 0 ].Summary );
                 }
+                recalculateStats();
+            }
+        }
+
+        // TODO: Add tests
+        public EventsHistory( EventsSummary summary )
+        {
+            Details = summary.Details;
+            Events = new Dictionary<string, EventsSummaryDataPoint[]>();
+            Counts = new Dictionary<string, int>();
+            indices = new Dictionary<string, int>();
+            Min = new Dictionary<string, EventSummary>();
+            Avg = new Dictionary<string, EventSummary>();
+            Max = new Dictionary<string, EventSummary>();
+            DateTime timeStamp = SystemTime.UtcNow;
+            foreach( string key in summary.Events.Keys )
+            {
+                Events.Add( key, new EventsSummaryDataPoint[ MaxSummariesTracked ] );
+                Events[ key ][ 0 ] = new EventsSummaryDataPoint( timeStamp, summary.Events[ key ] );
+                Counts.Add( key, 1 );
+                indices.Add( key, Counts[ key ] % MaxSummariesTracked );
+                EventsSummaryDataPoint[] dataPoints = Events[ key ];
+                Min.Add( key, dataPoints[ 0 ].Summary );
+                Max.Add( key, dataPoints[ 0 ].Summary );
+                Avg.Add( key, dataPoints[ 0 ].Summary );
+            }
+            recalculateStats();
+        }
+
+        /// <summary>
+        /// Adds an EventsSummary to the history
+        /// </summary>
+        /// <param name="time">Timestamp of the summary</param>
+        /// <param name="summary">The summary of the event collection</param>
+        public void AddSummary( DateTime time, EventsSummary summary )
+        {
+            // TODO: Compare and merge details
+            //Details = summary.Details;
+            if( summary.Events != null )
+            {
+                foreach( string key in summary.Events.Keys )
+                {
+                    EventsSummaryDataPoint dataPoint = new EventsSummaryDataPoint( time, summary.Events[ key ] );
+                    if( Events.ContainsKey( key ) )
+                    {
+                        Events[ key ][ indices[ key ] ] = dataPoint;
+                        Counts[ key ]++;
+                        indices[ key ] = Counts[ key ] % MaxSummariesTracked;
+                    }
+                    else
+                    {
+                        // New event key
+                        Events.Add( key, new EventsSummaryDataPoint[ MaxSummariesTracked ] );
+                        Events[ key ][ 0 ] = dataPoint;
+                        Counts.Add( key, 1 );
+                        indices.Add( key, Counts[ key ] % MaxSummariesTracked );
+                        EventsSummaryDataPoint[] dataPoints = Events[ key ];
+                        Min.Add( key, dataPoints[ 0 ].Summary );
+                        Max.Add( key, dataPoints[ 0 ].Summary );
+                        Avg.Add( key, dataPoints[ 0 ].Summary );
+                    }
+                }
+                recalculateStats();
             }
         }
 
@@ -92,6 +143,44 @@ namespace SimpleAnalytics
         public override string ToString()
         {
             return JsonConvert.SerializeObject( this );
+        }
+
+        private void recalculateStats()
+        {
+            foreach( string key in Events.Keys )
+            {
+                EventsSummaryDataPoint[] dataPoints = Events[ key ];
+                EventSummary min = dataPoints[ 0 ].Summary;
+                EventSummary max = dataPoints[ 0 ].Summary;
+                EventSummary avg = new EventSummary( 0, 0, 0, 0.0f );
+                int dataPointCount = 0;
+                for( int i = 0; i < Counts[ key ] && i < dataPoints.Length; i++ )
+                {
+                    if( dataPoints[ i ].Summary.Count < min.Count ) { min.Count = dataPoints[ i ].Summary.Count; }
+                    if( dataPoints[ i ].Summary.Open < min.Open ) { min.Open = dataPoints[ i ].Summary.Open; }
+                    if( dataPoints[ i ].Summary.Expired < min.Expired ) { min.Expired = dataPoints[ i ].Summary.Expired; }
+                    if( dataPoints[ i ].Summary.AverageTime < min.AverageTime ) { min.AverageTime = dataPoints[ i ].Summary.AverageTime; }
+
+                    if( dataPoints[ i ].Summary.Count > max.Count ) { max.Count = dataPoints[ i ].Summary.Count; }
+                    if( dataPoints[ i ].Summary.Open > max.Open ) { max.Open = dataPoints[ i ].Summary.Open; }
+                    if( dataPoints[ i ].Summary.Expired > max.Expired ) { max.Expired = dataPoints[ i ].Summary.Expired; }
+                    if( dataPoints[ i ].Summary.AverageTime > max.AverageTime ) { max.AverageTime = dataPoints[ i ].Summary.AverageTime; }
+
+                    avg.Count += dataPoints[ i ].Summary.Count;
+                    avg.Open += dataPoints[ i ].Summary.Open;
+                    avg.Expired += dataPoints[ i ].Summary.Expired;
+                    avg.AverageTime += dataPoints[ i ].Summary.AverageTime;
+                    dataPointCount++;
+                }
+
+                avg.Count /= dataPointCount;
+                avg.Open /= dataPointCount;
+                avg.Expired /= dataPointCount;
+                avg.AverageTime /= (float)dataPointCount;
+                Min[ key ] = min;
+                Max[ key ] = max;
+                Avg[ key ] = avg;
+            }
         }
     }
 }
