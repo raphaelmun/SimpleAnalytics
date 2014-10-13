@@ -65,6 +65,51 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void AddSummaryAddsSummary()
+        {
+            Event testEvent = new Event();
+            testEvent.Increment();
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", testEvent } } );
+            EventsHistory testHistory = new EventsHistory( null, null );
+            testHistory.AddSummary( SystemTime.UtcNow, testSummary );
+            Assert.AreEqual( 1, testHistory.Events.Count );
+        }
+
+        [TestMethod]
+        public void AddSummaryIgnoresSummaryWithNoEvents()
+        {
+            EventsHistory testHistory = new EventsHistory( null, null );
+            testHistory.AddSummary( SystemTime.UtcNow, new EventsSummary() );
+            Assert.AreEqual( 0, testHistory.Events.Count );
+        }
+
+        [TestMethod]
+        public void AddSummaryAddsNewlyIntroducedKeys()
+        {
+            Event testEvent = new Event();
+            testEvent.Increment();
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", testEvent } } );
+            EventsSummary newSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "TestNew", testEvent } } );
+            EventsHistory testHistory = new EventsHistory( null, null );
+            testHistory.AddSummary( SystemTime.UtcNow, testSummary );
+            testHistory.AddSummary( SystemTime.UtcNow, newSummary );
+            Assert.IsTrue( testHistory.Events.ContainsKey( "TestNew" ) );
+        }
+
+        [TestMethod]
+        public void AddSummaryRecalculatesStats()
+        {
+            Event testEvent = new Event();
+            testEvent.Increment();
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", testEvent } } );
+            EventsHistory testHistory = new EventsHistory( null, null );
+            testHistory.AddSummary( SystemTime.UtcNow, testSummary );
+            Assert.AreEqual( 1, testHistory.Avg[ "Test" ].Count );
+            Assert.AreEqual( 1, testHistory.Max[ "Test" ].Count );
+            Assert.AreEqual( 1, testHistory.Min[ "Test" ].Count );
+        }
+
+        [TestMethod]
         public void ToStringIsNotEmpty()
         {
             EventsHistory testHistory = new EventsHistory( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, EventsSummaryDataPoint[]>() { { "Test", new EventsSummaryDataPoint[] { new EventsSummaryDataPoint( SystemTime.UtcNow, new EventSummary( 12, 34, 56, 7.8f ) ) } } } );

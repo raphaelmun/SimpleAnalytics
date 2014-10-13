@@ -67,14 +67,18 @@ namespace SimpleAnalyticsTests
         [TestMethod]
         public void ToStringIsNotEmpty()
         {
-            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", new Event() } } );
+            Event testEvent = new Event();
+            testEvent.Increment();
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", testEvent } } );
             Assert.IsFalse( string.IsNullOrEmpty( testSummary.ToString() ) );
         }
 
         [TestMethod]
         public void FromStringCreatesEqualEventOccurance()
         {
-            EventsSummary expectedSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", new Event() } } );
+            Event testEvent = new Event();
+            testEvent.Increment();
+            EventsSummary expectedSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, new Dictionary<string, Event>() { { "Test", testEvent } } );
             EventsSummary testSummary = EventsSummary.FromString( expectedSummary.ToString() );
             Assert.AreEqual( expectedSummary.ToString(), testSummary.ToString() );
         }
