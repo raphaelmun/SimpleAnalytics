@@ -11,7 +11,9 @@ namespace SimpleAnalytics
     {
         public const int MaxSummariesTracked = 100;
         public Dictionary<string, string> Details;
+        [JsonIgnore]
         public Dictionary<string, EventsSummaryDataPoint[]> Events;
+        [JsonIgnore]
         public Dictionary<string, int> Counts;
         private Dictionary<string, int> indices;
         public Dictionary<string, EventSummary> Min; // TODO: Add tests
@@ -65,7 +67,7 @@ namespace SimpleAnalytics
         }
 
         // TODO: Add tests
-        public EventsHistory( EventsSummary summary )
+        public EventsHistory( DateTime time, EventsSummary summary )
         {
             Details = summary.Details;
             Events = new Dictionary<string, EventsSummaryDataPoint[]>();
@@ -74,11 +76,10 @@ namespace SimpleAnalytics
             Min = new Dictionary<string, EventSummary>();
             Avg = new Dictionary<string, EventSummary>();
             Max = new Dictionary<string, EventSummary>();
-            DateTime timeStamp = SystemTime.UtcNow;
             foreach( string key in summary.Events.Keys )
             {
                 Events.Add( key, new EventsSummaryDataPoint[ MaxSummariesTracked ] );
-                Events[ key ][ 0 ] = new EventsSummaryDataPoint( timeStamp, summary.Events[ key ] );
+                Events[ key ][ 0 ] = new EventsSummaryDataPoint( time, summary.Events[ key ] );
                 Counts.Add( key, 1 );
                 indices.Add( key, Counts[ key ] % MaxSummariesTracked );
                 EventsSummaryDataPoint[] dataPoints = Events[ key ];
@@ -96,8 +97,22 @@ namespace SimpleAnalytics
         /// <param name="summary">The summary of the event collection</param>
         public void AddSummary( DateTime time, EventsSummary summary )
         {
-            // TODO: Compare and merge details
-            //Details = summary.Details;
+            // Update Details and add new ones
+            if( summary.Details != null )
+            {
+                foreach( string key in summary.Details.Keys )
+                {
+                    if( Details.ContainsKey( key ) )
+                    {
+                        Details[ key ] = summary.Details[ key ];
+                    }
+                    else
+                    {
+                        Details.Add( key, summary.Details[ key ] );
+                    }
+                }
+            }
+
             if( summary.Events != null )
             {
                 foreach( string key in summary.Events.Keys )
