@@ -84,6 +84,24 @@ namespace SimpleAnalyticsTests
         }
 
         [TestMethod]
+        public void AddSummaryAddsNewDetails()
+        {
+            EventsHistory testHistory = new EventsHistory( null, null );
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test" } }, null );
+            testHistory.AddSummary( SystemTime.UtcNow, testSummary );
+            Assert.IsTrue( testHistory.Details.ContainsKey( "Test" ) );
+        }
+
+        [TestMethod]
+        public void AddSummaryUpdatesExistingDetails()
+        {
+            EventsHistory testHistory = new EventsHistory( new Dictionary<string, string>() { { "Test", "Test" } }, null );
+            EventsSummary testSummary = new EventsSummary( new Dictionary<string, string>() { { "Test", "Test2" } }, null );
+            testHistory.AddSummary( SystemTime.UtcNow, testSummary );
+            Assert.AreEqual( "Test2", testHistory.Details[ "Test" ] );
+        }
+
+        [TestMethod]
         public void AddSummaryAddsNewlyIntroducedKeys()
         {
             Event testEvent = new Event();
